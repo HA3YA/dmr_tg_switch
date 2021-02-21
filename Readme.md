@@ -22,6 +22,7 @@ switch:
     scan_interval:                                
       hours: 1
 ```
+
 `dmr_id`:        Your 7 chars DMR ID + 01..99 (more hotspots) ie. 216999901      
 `bm_api_key`:    Your Bramdmeister API Key    
 `tg`:            Talkgroup to ADD/DEL    
