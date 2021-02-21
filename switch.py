@@ -1,8 +1,5 @@
 import logging
 from homeassistant.helpers.entity import ToggleEntity
-#import voluptuous as vol
-#import homeassistant.helpers.config_validation as cv
-#from homeassistant.components.switch import PLATFORM_SCHEMA
 from homeassistant.const import CONF_NAME
 
 import requests
@@ -21,28 +18,7 @@ CONF_SLOT = 'tslot'
 DEFAULT_NAME = 'DMR TG Switch'
 DEFAULT_ICON = 'mdi:account-multiple'
 
-"""
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {
-        vol.Required(CONF_DMR_ID): cv.positive_int,
-        vol.Required(CONF_BM_API_KEY): cv.string,
-        vol.Required(CONF_TG): cv.positive_int,
-        vol.Required(CONF_SLOT): cv.positive_int,
-        vol.Optional(CONF_NAME, DEFAULT_NAME): cv.string
-   }
-)
-"""
-
 URL_BM = "https://api.brandmeister.network/v1.0/repeater/"
-
-"""
-    URL_STATUS = "https://api.brandmeister.network/v1.0/repeater/?action=profile&q="
-    URL_ADD = "https://api.brandmeister.network/v1.0/repeater/talkgroup/?action=ADD&id="
-    URL_DEL = "https://api.brandmeister.network/v1.0/repeater/talkgroup/?action=DEL&id="
-    URL_DROP_QSO = "https://api.brandmeister.network/v1.0/repeater/setRepeaterDbus.php?action=dropCallRoute&slot=0&q="
-    URL_DROP_DYN = "https://api.brandmeister.network/v1.0/repeater/setRepeaterTarantool.php?action=dropDynamicGroups&slot=0&q=" 
-"""
-
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
     dmr_id = config.get(CONF_DMR_ID)
@@ -52,13 +28,11 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     name = config.get(CONF_NAME)
 
     switch = DMRTalkgroupSwitch(dmr_id, bm_api_key, tg, tslot, name)
-    #switch.update()
 
     add_devices([switch])
 
 
 class DMRTalkgroupSwitch(ToggleEntity):
-
     def __init__(self, dmr_id: int, bm_api_key: str, tg: int, tslot: int, name: str):
         self._state = None
         self._is_on = False
@@ -75,7 +49,6 @@ class DMRTalkgroupSwitch(ToggleEntity):
 
     @property
     def is_on(self):
-        #return self._state
         return self._is_on
 
     #@property
@@ -89,9 +62,6 @@ class DMRTalkgroupSwitch(ToggleEntity):
                  }
         response_api = requests.post(url, data=data, auth=HTTPBasicAuth(self.bm_api_key, ''), headers=header)         
         self.update()
-        #self.turn_on
-        #self._state
-        #self.turn_on
 
     #@property
     def turn_off(self, **kwargs):
@@ -113,11 +83,9 @@ class DMRTalkgroupSwitch(ToggleEntity):
         bm_data = json.loads(response_api.text)    
         for i in bm_data['staticSubscriptions']:
             if i["talkgroup"] == self.tg:
-                #self.turn_on
                 self._is_on = True 
                 status = 1
         if status == 0:
-            #self.turn_off
             self._is_on = False
   
 
