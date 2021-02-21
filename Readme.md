@@ -22,8 +22,9 @@ switch:
     scan_interval:                                
       hours: 1
 ```
-`dmr_id`:        Your 7 chars DMR ID + 01..99 (more hotspots) ie. 216999901
-`bm_api_key`:    Your Bramdmeister API Key 
-`tg`:            Talkgroup to ADD/DEL
-`tslot`:         TimeSlot [0/1/2], Simplex Hotspot=0, Duplex Hospot = 1/2
-`scan_interval`: Updating every hour (instead of the default 30 seconds) seems to be OK.
+`dmr_id`:        Your 7 chars DMR ID + 01..99 (more hotspots) ie. 216999901   
+`bm_api_key`:    Your Bramdmeister API Key    
+`tg`:            Talkgroup to ADD/DEL    
+`tslot`:         TimeSlot [0/1/2], Simplex Hotspot=0, Duplex Hospot = 1/2    
+`scan_interval`: Updating every hour (instead of the default 30 seconds) seems to be OK.   
+
