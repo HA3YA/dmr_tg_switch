@@ -1,6 +1,6 @@
 # DMR Talkgroup Switch Home Assistant component
 
-Custom component for [Home Assistant](https://homeassistant.io) that ADD, DELETE static talkgroups to a hotspot on a Brandmeister Server.
+Custom component for [Home Assistant](https://homeassistant.io) so you can ADD, DELETE static talkgroups to a hotspot on a Brandmeister Server.
 ![Screenshot](screenshot.png?raw=true)
 
 ## Installation
@@ -26,4 +26,4 @@ switch:
 `bm_api_key`:    Your Bramdmeister API Key 
 `tg`:            Talkgroup to ADD/DEL
 `tslot`:         TimeSlot [0/1/2], Simplex Hotspot=0, Duplex Hospot = 1/2
-`scan_interval`: Updating every hour (instead of the default 30 seconds) seems to be OK though.
+`scan_interval`: Updating every hour (instead of the default 30 seconds) seems to be OK.
