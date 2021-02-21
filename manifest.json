@@ -1,0 +1,11 @@
+{
+    "domain": "dmr_tg_switch",
+    "name": "DMR Talkgroup Switch",
+    "documentation": [],
+    "dependencies": [],
+    "codeowners": [],
+    "requirements": [
+      "requests"
+    ]
+  }
+  
