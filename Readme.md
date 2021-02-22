@@ -26,8 +26,8 @@ switch:
 
 `name`:          Talkgroup friendly name      
 `dmr_id`:        Your 7 characters DMR ID + 01..99 (more hotspots) ie. 216999901      
-`bm_api_key`:    Your Bramdmeister API Key    
+`bm_api_key`:    Your Brandmeister API Key    
 `tg`:            Talkgroup to ADD/DEL    
-`tslot`:         TimeSlot [0/1/2], simplex hotspot=0, duplex hospot=1/2    
+`tslot`:         TimeSlot [0/1/2], simplex hotspot=0, duplex hotspot=1/2    
 `scan_interval`: Updating every hour (instead of the default 30 seconds) seems to be OK.   
 
