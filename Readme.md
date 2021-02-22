@@ -15,6 +15,7 @@ Custom component for [Home Assistant](https://homeassistant.io) so you can ADD, 
 ``` yaml
 switch:
   - platform: dmr_tg_switch
+    name: TG216
     dmr_id: 216999901                       
     bm_api_key: !secret your_bm_api_key     
     tg: 216                                 
@@ -23,9 +24,10 @@ switch:
       hours: 1
 ```
 
-`dmr_id`:        Your 7 chars DMR ID + 01..99 (more hotspots) ie. 216999901      
+`name`:          Talkgroup friendly name      
+`dmr_id`:        Your 7 characters DMR ID + 01..99 (more hotspots) ie. 216999901      
 `bm_api_key`:    Your Bramdmeister API Key    
 `tg`:            Talkgroup to ADD/DEL    
-`tslot`:         TimeSlot [0/1/2], Simplex Hotspot=0, Duplex Hospot = 1/2    
+`tslot`:         TimeSlot [0/1/2], simplex hotspot=0, duplex hospot=1/2    
 `scan_interval`: Updating every hour (instead of the default 30 seconds) seems to be OK.   
 
