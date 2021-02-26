@@ -73,7 +73,7 @@ class DMRTalkgroupSwitch(ToggleEntity):
         if self.tg == DROP_CUR_QSO :
             url = URL_BM + "setRepeaterDbus.php?action=dropCallRoute&slot=" + str(self.tslot) + "&q=" + str(self.dmr_id) 
             response_api = requests.post(url, auth=HTTPBasicAuth(self.bm_api_key, ''))         
-            _LOGGER.warning('Command to BM: Drop Current QSO')
+            #_LOGGER.warning('Command to BM: Drop Current QSO')
         elif self.tg == DROP_DYN_TGS :
             url = URL_BM + "setRepeaterTarantool.php?action=dropDynamicGroups&slot=" + str(self.tslot) + "&q=" + str(self.dmr_id) 
             response_api = requests.post(url, auth=HTTPBasicAuth(self.bm_api_key, ''))         
