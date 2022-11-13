@@ -1,7 +1,7 @@
 {
     "domain": "dmr_tg_switch",
     "name": "DMR Talkgroup Switch",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "documentation": "https://github.com/HA3YA/dmr_tg_switch",
     "dependencies": [],
     "codeowners": [],
