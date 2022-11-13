@@ -1,11 +1,11 @@
 # DMR Talkgroup Switch Home Assistant component
 
 Custom component for [Home Assistant](https://homeassistant.io) so you can   
- - ADD, DELETE static talkgroups to a hotspot  
+ - ADD, DELETE static talkgroups  
  - Drop Current QSO  
  - Drop All Dynamic Talkgroups 
  
-on a Brandmeister DMR Server.   
+on a Brandmeister DMR Server using BM API v2.   
 
 ![Screenshot](screenshot_2.png?raw=true)
 ![Screenshot](screenshot_1.png?raw=true)
