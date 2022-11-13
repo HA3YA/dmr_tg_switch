@@ -6,7 +6,6 @@ from homeassistant.components.switch import PLATFORM_SCHEMA
 from homeassistant.const import CONF_NAME
 
 import requests
-from requests.auth import HTTPBasicAuth
 import json
 
 _LOGGER = logging.getLogger(__name__)
@@ -31,10 +30,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
    }
 )
 
-URL_BM = "https://api.brandmeister.network/v1.0/repeater/"
-
-DROP_CUR_QSO = 9998         # TG for Drop Current QSO 
-DROP_DYN_TGS = 9997         # TG for Drop All Dynamic TG    
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
     dmr_id = config.get(CONF_DMR_ID)
@@ -47,6 +42,10 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 
     add_devices([switch])
 
+DROP_CUR_QSO = 9998         # TG for Drop Current QSO 
+DROP_DYN_TGS = 9997         # TG for Drop All Dynamic TG    
+
+URL_BM = "https://api.brandmeister.network/v2/device/"
 
 class DMRTalkgroupSwitch(ToggleEntity):
 
@@ -58,6 +57,10 @@ class DMRTalkgroupSwitch(ToggleEntity):
         self.tg: int = tg
         self.tslot: int = tslot
         self._name: str = name
+        self.header_auth = {'Authorization': 'Bearer ' + self.bm_api_key}
+        self.header_acpt = {'accept': 'application/json'}
+        self.header_adel = {'accept': '*/*'}
+        self.header_cont = {'Content-Type': 'application/json'}
         self.update()
         
     @property
@@ -71,46 +74,64 @@ class DMRTalkgroupSwitch(ToggleEntity):
     #@property
     def turn_on(self, **kwargs):
         if self.tg == DROP_CUR_QSO :
-            url = URL_BM + "setRepeaterDbus.php?action=dropCallRoute&slot=" + str(self.tslot) + "&q=" + str(self.dmr_id) 
-            response_api = requests.post(url, auth=HTTPBasicAuth(self.bm_api_key, ''))         
-            #_LOGGER.warning('Command to BM: Drop Current QSO')
-        elif self.tg == DROP_DYN_TGS :
-            url = URL_BM + "setRepeaterTarantool.php?action=dropDynamicGroups&slot=" + str(self.tslot) + "&q=" + str(self.dmr_id) 
-            response_api = requests.post(url, auth=HTTPBasicAuth(self.bm_api_key, ''))         
-            #_LOGGER.warning("Command to BM: Drop All Dynamic TG\'s")
-        else:
-            self._is_on = True
-            url = URL_BM + "talkgroup/?action=ADD&id=" + str(self.dmr_id) 
-            data = "talkgroup=" + str(self.tg) + "&timeslot=" + str(self.tslot)
-            header = {'Content-Length': str(len(data)),
-                      'Content-Type': 'application/x-www-form-urlencoded'
-                     }
-            response_api = requests.post(url, data=data, auth=HTTPBasicAuth(self.bm_api_key, ''), headers=header)         
-            #_LOGGER.warning('Command to BM: ADD Static Talkgroup: ' + str(self.tg))
-            self.update()
+            url = URL_BM + str(self.dmr_id) + '/action/dropCallRoute/' + str(self.tslot)
+            post_header = {}
+            post_header.update(self.header_acpt)
+            post_header.update(self.header_auth)
+            response_api = requests.get(url, headers=post_header)
+            if response_api.status_code == 200:
+                _LOGGER.info('Dropped current QSO on %d device, slot %d', self.dmr_id, self.tslot)
 
+        elif self.tg == DROP_DYN_TGS:
+            url = URL_BM + str(self.dmr_id) + '/action/dropDynamicGroups/' + str(self.tslot)
+            post_header = {}
+            post_header.update(self.header_acpt)
+            post_header.update(self.header_auth)
+            response_api = requests.get(url, headers=post_header)
+            if response_api.status_code == 200:
+                _LOGGER.info('Dropped all Dynamic Groups on %d device, slot %d', self.dmr_id, self.tslot)
+
+        else:
+            url = URL_BM + str(self.dmr_id) + '/talkgroup' 
+            post_header = {}
+            post_header.update(self.header_acpt)
+            post_header.update(self.header_auth)
+            post_header.update(self.header_cont)
+            post_data = {}
+            post_data['slot'] = self.tslot
+            post_data['group'] = self.tg
+            response_api = requests.post(url, headers=post_header, data=json.dumps(post_data))
+            if response_api.status_code == 200:
+                self._is_on = True
+                _LOGGER.info('Create a static talkgroup TG%d on %d device, slot %d', self.tg, self.dmr_id, self.tslot)
+            else:
+                _LOGGER.warning('Can\'t create a static talkgroup TG%d on %d device', self.tg, self.dmr_id)
+        
     #@property
     def turn_off(self, **kwargs):
-        self._is_on = False
-        url = URL_BM + "talkgroup/?action=DEL&id=" + str(self.dmr_id) 
-        data = "talkgroup=" + str(self.tg) + "&timeslot=" + str(self.tslot)
-        header = {'Content-Length': str(len(data)),
-                  'Content-Type': 'application/x-www-form-urlencoded'
-                 }
-        response_api = requests.post(url, data=data, auth=HTTPBasicAuth(self.bm_api_key, ''), headers=header)         
-        #_LOGGER.warning('Command to BM: DELETE Static Talkgroup: ' + str(self.tg))
-        self.update()
+        url = URL_BM + str(self.dmr_id) + '/talkgroup/' + str(self.tslot) + '/' + str(self.tg)
+        header = {}
+        header.update(self.header_adel)
+        header.update(self.header_auth)
+        response_api = requests.delete(url, headers=header)
+        if response_api.status_code == 200:
+            self._is_on = False
+            _LOGGER.info('Delete a static talkgroup TG%d on %d device, slot %d', self.tg, self.dmr_id, self.tslot)
+        else:
+            _LOGGER.warning('Can\'t delete a static talkgroup TG%d on %d device', self.tg, self.dmr_id)
     
     def update(self):
-        if self.tg < DROP_DYN_TGS or self.tg > DROP_CUR_QSO:
-            status = 0
-            url = URL_BM + "?action=profile&q=" + str(self.dmr_id) 
-            response_api = requests.get(url) 
-            bm_data = json.loads(response_api.text)    
-            for i in bm_data['staticSubscriptions']:
-                if i["talkgroup"] == self.tg:
+        status = 0
+        url = URL_BM + str(self.dmr_id) + '/talkgroup'
+        response_api = requests.get(url, headers=self.header_acpt) 
+        response_api.encoding = 'utf-8'
+        bm_data = response_api.json()
+        if response_api.status_code == 200:
+            for i in bm_data:
+                if i["talkgroup"] == str(self.tg):
                     self._is_on = True 
                     status = 1
             if status == 0:
                 self._is_on = False
-            #_LOGGER.warning('Updated Static Talkgroup: ' + str(self.tg))
+            _LOGGER.info('Updated static talkgroup TG%d on %d device', self.tg, self.dmr_id)
+
