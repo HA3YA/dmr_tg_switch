@@ -1,3 +1,7 @@
+# dmr_tg_switch
+# Copyright (c) 2024 HA3YA
+# Licensed under the MIT License – see the LICENSE file for details.
+
 import logging
 from homeassistant.helpers.entity import ToggleEntity
 import voluptuous as vol
@@ -26,10 +30,14 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Required(CONF_BM_API_KEY): cv.string,
         vol.Required(CONF_TG): cv.positive_int,
         vol.Required(CONF_SLOT): cv.positive_int,
-        vol.Optional(CONF_NAME, DEFAULT_NAME): cv.string
-   }
+        vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string
+    }
 )
 
+DROP_CUR_QSO = 9998  # TG for Drop Current QSO 
+DROP_DYN_TGS = 9997  # TG for Drop All Dynamic TG    
+
+URL_BM = "https://api.brandmeister.network/v2/device/"
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
     dmr_id = config.get(CONF_DMR_ID)
@@ -39,99 +47,79 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     name = config.get(CONF_NAME)
 
     switch = DMRTalkgroupSwitch(dmr_id, bm_api_key, tg, tslot, name)
-
     add_devices([switch])
 
-DROP_CUR_QSO = 9998         # TG for Drop Current QSO 
-DROP_DYN_TGS = 9997         # TG for Drop All Dynamic TG    
-
-URL_BM = "https://api.brandmeister.network/v2/device/"
 
 class DMRTalkgroupSwitch(ToggleEntity):
-
     def __init__(self, dmr_id: int, bm_api_key: str, tg: int, tslot: int, name: str):
-        self._state = None
-        self._is_on = False
-        self.dmr_id: int = dmr_id
-        self.bm_api_key: str = bm_api_key
-        self.tg: int = tg
-        self.tslot: int = tslot
-        self._name: str = name
-        self.header_auth = {'Authorization': 'Bearer ' + self.bm_api_key}
-        self.header_acpt = {'accept': 'application/json'}
-        self.header_adel = {'accept': '*/*'}
-        self.header_cont = {'Content-Type': 'application/json'}
+        self._attr_name = name
+        self._attr_is_on = False
+        self.dmr_id = dmr_id
+        self.bm_api_key = bm_api_key
+        self.tg = tg
+        self.tslot = tslot
+
+        self.headers = {
+            'Authorization': f'Bearer {self.bm_api_key}',
+            'accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+
         self.update()
-        
-    @property
-    def name(self):
-        return self._name
 
-    @property
-    def is_on(self):
-        return self._is_on
+    def get_headers(self):
+        return self.headers
 
-    #@property
     def turn_on(self, **kwargs):
-        if self.tg == DROP_CUR_QSO :
-            url = URL_BM + str(self.dmr_id) + '/action/dropCallRoute/' + str(self.tslot)
-            post_header = {}
-            post_header.update(self.header_acpt)
-            post_header.update(self.header_auth)
-            response_api = requests.get(url, headers=post_header)
-            if response_api.status_code == 200:
-                _LOGGER.info('Dropped current QSO on %d device, slot %d', self.dmr_id, self.tslot)
+        try:
+            if self.tg == DROP_CUR_QSO:
+                url = f"{URL_BM}{self.dmr_id}/action/dropCallRoute/{self.tslot}"
+                response = requests.get(url, headers=self.get_headers())
 
-        elif self.tg == DROP_DYN_TGS:
-            url = URL_BM + str(self.dmr_id) + '/action/dropDynamicGroups/' + str(self.tslot)
-            post_header = {}
-            post_header.update(self.header_acpt)
-            post_header.update(self.header_auth)
-            response_api = requests.get(url, headers=post_header)
-            if response_api.status_code == 200:
-                _LOGGER.info('Dropped all Dynamic Groups on %d device, slot %d', self.dmr_id, self.tslot)
+            elif self.tg == DROP_DYN_TGS:
+                url = f"{URL_BM}{self.dmr_id}/action/dropDynamicGroups/{self.tslot}"
+                response = requests.get(url, headers=self.get_headers())
 
-        else:
-            url = URL_BM + str(self.dmr_id) + '/talkgroup' 
-            post_header = {}
-            post_header.update(self.header_acpt)
-            post_header.update(self.header_auth)
-            post_header.update(self.header_cont)
-            post_data = {}
-            post_data['slot'] = self.tslot
-            post_data['group'] = self.tg
-            response_api = requests.post(url, headers=post_header, data=json.dumps(post_data))
-            if response_api.status_code == 200:
-                self._is_on = True
-                _LOGGER.info('Create a static talkgroup TG%d on %d device, slot %d', self.tg, self.dmr_id, self.tslot)
             else:
-                _LOGGER.warning('Can\'t create a static talkgroup TG%d on %d device', self.tg, self.dmr_id)
-        
-    #@property
-    def turn_off(self, **kwargs):
-        url = URL_BM + str(self.dmr_id) + '/talkgroup/' + str(self.tslot) + '/' + str(self.tg)
-        header = {}
-        header.update(self.header_adel)
-        header.update(self.header_auth)
-        response_api = requests.delete(url, headers=header)
-        if response_api.status_code == 200:
-            self._is_on = False
-            _LOGGER.info('Delete a static talkgroup TG%d on %d device, slot %d', self.tg, self.dmr_id, self.tslot)
-        else:
-            _LOGGER.warning('Can\'t delete a static talkgroup TG%d on %d device', self.tg, self.dmr_id)
-    
-    def update(self):
-        status = 0
-        url = URL_BM + str(self.dmr_id) + '/talkgroup'
-        response_api = requests.get(url, headers=self.header_acpt) 
-        response_api.encoding = 'utf-8'
-        bm_data = response_api.json()
-        if response_api.status_code == 200:
-            for i in bm_data:
-                if i["talkgroup"] == str(self.tg):
-                    self._is_on = True 
-                    status = 1
-            if status == 0:
-                self._is_on = False
-            _LOGGER.info('Updated static talkgroup TG%d on %d device', self.tg, self.dmr_id)
+                url = f"{URL_BM}{self.dmr_id}/talkgroup"
+                data = json.dumps({'slot': self.tslot, 'group': self.tg})
+                response = requests.post(url, headers=self.get_headers(), data=data)
 
+            if response.status_code == 200:
+                self._attr_is_on = True
+                _LOGGER.info("Turned on TG%d on device %d, slot %d", self.tg, self.dmr_id, self.tslot)
+            else:
+                _LOGGER.warning("Failed to turn on TG%d on device %d", self.tg, self.dmr_id)
+
+        except requests.RequestException as e:
+            _LOGGER.error("Error in turn_on: %s", str(e))
+
+    def turn_off(self, **kwargs):
+        try:
+            url = f"{URL_BM}{self.dmr_id}/talkgroup/{self.tslot}/{self.tg}"
+            response = requests.delete(url, headers=self.get_headers())
+
+            if response.status_code == 200:
+                self._attr_is_on = False
+                _LOGGER.info("Turned off TG%d on device %d, slot %d", self.tg, self.dmr_id, self.tslot)
+            else:
+                _LOGGER.warning("Failed to turn off TG%d on device %d", self.tg, self.dmr_id)
+
+        except requests.RequestException as e:
+            _LOGGER.error("Error in turn_off: %s", str(e))
+
+    def update(self):
+        try:
+            url = f"{URL_BM}{self.dmr_id}/talkgroup"
+            response = requests.get(url, headers=self.get_headers())
+
+            if response.status_code == 200:
+                bm_data = response.json()
+                self._attr_is_on = any(i["talkgroup"] == str(self.tg) for i in bm_data)
+                _LOGGER.info("Updated state for TG%d on device %d", self.tg, self.dmr_id)
+            else:
+                _LOGGER.warning("Failed to update state for TG%d on device %d", self.tg, self.dmr_id)
+
+        except requests.RequestException as e:
+            _LOGGER.error("Error in update: %s", str(e))
+            
