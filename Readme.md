@@ -81,3 +81,5 @@ Create it as a button in HA Lovelace.
 ![Screenshot](drop_all_dynamic_2.png?raw=true)
 ![Screenshot](drop_all_dynamic_1.png?raw=true)
 
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
