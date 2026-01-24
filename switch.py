@@ -1,5 +1,5 @@
 # dmr_tg_switch
-# Copyright (c) 2024 HA3YA
+# Copyright (c) 2021 HA3YA
 # Licensed under the MIT License – see the LICENSE file for details.
 
 import logging
