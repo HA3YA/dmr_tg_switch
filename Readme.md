@@ -12,24 +12,23 @@ on a Brandmeister DMR Server using BM API v2.
 
 ## Installation
 
-1. Copy the folder `dmr_tg_switch` to `custom_components` inside your Home Assistant config folder
+1. Copy the folder `dmr_tg_switch` to `custom_components` folder inside your Home Assistant config folder
 2. Restart Home Assistant (this installs the component's dependencies)
-3. Add your config to `configuration.yaml` (see options below)
+3. Add your config to `config/switch.yaml` (see options below)
 4. Restart Home Assistant again
 
 ## Configuration
 
 ### Talkgroup switch
 ``` yaml
-switch:
-  - platform: dmr_tg_switch
-    name: TG216
-    dmr_id: 123456701                       
-    bm_api_key: !secret your_bm_api_key     
-    tg: 216                                 
-    tslot: 1                                  
-    scan_interval:                                
-      hours: 1        
+- platform: dmr_tg_switch
+  name: TG216
+  dmr_id: 123456701                       
+  bm_api_key: !secret your_bm_api_key     
+  tg: 216                                 
+  tslot: 1                                  
+  scan_interval:                                
+    minutes: 60        
 ```     
 
 |   |    |   
@@ -46,15 +45,14 @@ switch:
         
 ### Drop Current QSO
 ``` yaml
-switch:
-  - platform: dmr_tg_switch
-    name: Drop Current QSO S1
-    dmr_id: 123456701                       
-    bm_api_key: !secret your_bm_api_key     
-    tg: 9998                                 
-    tslot: 1                                  
-    scan_interval:                                
-      hours: 1        
+- platform: dmr_tg_switch
+  name: Drop Current QSO S1
+  dmr_id: 123456701                       
+  bm_api_key: !secret your_bm_api_key     
+  tg: 9998                                 
+  tslot: 1                                  
+  scan_interval:                                
+    minutes: 60        
 ``` 
 Create it as a button in HA Lovelace.   
 
@@ -65,15 +63,14 @@ Create it as a button in HA Lovelace.
 
 ### Drop All Dynamic Talkgroups
 ``` yaml
-switch:
-  - platform: dmr_tg_switch
-    name: Drop All Dynamic S1
-    dmr_id: 123456701                       
-    bm_api_key: !secret your_bm_api_key     
-    tg: 9997                                 
-    tslot: 1                                  
-    scan_interval:                                
-      hours: 1        
+- platform: dmr_tg_switch
+  name: Drop All Dynamic S1
+  dmr_id: 123456701                       
+  bm_api_key: !secret your_bm_api_key     
+  tg: 9997                                 
+  tslot: 1                                  
+  scan_interval:                                
+    minutes: 60        
 ```  
     
 Create it as a button in HA Lovelace.   
